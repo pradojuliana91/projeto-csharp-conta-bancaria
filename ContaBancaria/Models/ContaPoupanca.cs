@@ -1,14 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using ContaBancaria.Enums;
 
 namespace ContaBancaria.Models
 {
     class ContaPoupanca : Conta
     {
         public int Aniversario { get; protected set; }
+
+        public ContaPoupanca(int numero, int agencia, string titular, int aniversario)
+            : base(numero, agencia, TipoConta.Poupanca, titular)
+        {
+            Aniversario = aniversario;
+        }
 
         public void Visualizar()
         {

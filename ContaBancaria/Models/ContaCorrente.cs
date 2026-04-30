@@ -1,11 +1,13 @@
-﻿namespace ContaBancaria.Models
+﻿using ContaBancaria.Enums;
+
+namespace ContaBancaria.Models
 {
     class ContaCorrente : Conta
     {
         public float Limite { get; protected set; }
 
         public ContaCorrente(int numero, int agencia, string titular, float limite)
-            : base(numero, agencia, 2, titular)
+            : base(numero, agencia, TipoConta.Corrente, titular)
         {
             Limite = limite;
         }

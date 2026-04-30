@@ -1,14 +1,16 @@
-﻿namespace ContaBancaria.Models
+﻿using ContaBancaria.Enums;
+
+namespace ContaBancaria.Models
 {
     class Conta
     {
         public int Numero { get; protected set; }
         public int Agencia { get; protected set; }
-        public int Tipo { get; protected set; }
+        public TipoConta Tipo { get; protected set; }
         public string? Titular { get; protected set; }
         public float Saldo { get; protected set; }
 
-        public Conta(int numero, int agencia, int tipo, string titular)
+        public Conta(int numero, int agencia, TipoConta tipo, string titular)
         {
             Numero = numero;
             Agencia = agencia;
