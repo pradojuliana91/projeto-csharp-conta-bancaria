@@ -1,14 +1,14 @@
-﻿using ContaBancaria.Enums;
+﻿using ContaBancaria.Models.Enums;
 
 namespace ContaBancaria.Models
 {
-    class Conta
+    abstract class Conta
     {
-        public int Numero { get; protected set; }
-        public int Agencia { get; protected set; }
-        public TipoConta Tipo { get; protected set; }
-        public string? Titular { get; protected set; }
-        public float Saldo { get; protected set; }
+        public int Numero { get; set; }
+        public int Agencia { get; set; }
+        public TipoConta Tipo { get; set; }
+        public string Titular { get; set; }
+        public float Saldo { get; set; }
 
         public Conta(int numero, int agencia, TipoConta tipo, string titular)
         {
@@ -19,24 +19,14 @@ namespace ContaBancaria.Models
             Saldo = 0.0f;
         }
 
-        public virtual bool Sacar(float valor)
-        {
-            if (Saldo < valor || valor <= 0)
-            {
-                return false;
-            }
-            else
-            {
-                Saldo -= valor;
-                return true;
-            }
-        }
+        public abstract bool Sacar(float valor);
+
         public virtual void Depositar(float valor)
         {
             if (valor > 0)
             {
                 Saldo += valor;
-            } 
+            }
         }
     }
 }

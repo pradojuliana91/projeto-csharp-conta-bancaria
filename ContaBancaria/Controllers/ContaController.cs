@@ -1,9 +1,9 @@
-﻿using ContaBancaria.Interfaces;
+﻿using ContaBancaria.Controllers.Inerfaces;
 using ContaBancaria.Models;
 
 namespace ContaBancaria.Controllers
 {
-    class ContaController : IContaRepository
+    class ContaController : IContaController
     {
         private List<Conta> listaContas = new List<Conta>();
         public void procurarPorNumero(int numero)
@@ -18,7 +18,7 @@ namespace ContaBancaria.Controllers
 
             if (conta != null)
             {
-                Console.WriteLine($"\nConta encontrada\n: Número: {conta.Numero} | Titular: {conta.Titular} | Saldo: {conta.Saldo}");
+                Console.WriteLine($"\nConta encontrada:\n Número: {conta.Numero} | Titular: {conta.Titular} | Saldo: {conta.Saldo}");
             }
             else
             {
@@ -56,11 +56,12 @@ namespace ContaBancaria.Controllers
             }
 
             listaContas.Add(conta);
-            Console.WriteLine($"\nConta {conta.Numero} cadastrada com sucesso!");
+            Console.WriteLine($"\nConta {conta.Numero} cadastrada com sucesso!\n");
         }
         public void atualizar(Conta conta)
         {
             var existeConta = buscarNaCollection(conta.Numero);
+            
 
             if (existeConta != null)
             {

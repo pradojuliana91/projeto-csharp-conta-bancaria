@@ -71,10 +71,12 @@ namespace ContaBancaria.Menu
             Console.WriteLine("1 - Corrente | 2 - Poupança");
             int tipo = int.Parse(Console.ReadLine());
 
-            if (tipo != 1 && tipo != 2)
+            while (tipo != 1 && tipo != 2)
             {
                 Console.WriteLine("Tipo de conta inválido! Tente novamente.\n");
-                return;
+                Console.WriteLine("Escolha o tipo de conta: ");
+                Console.WriteLine("1 - Corrente | 2 - Poupança");
+                tipo = int.Parse(Console.ReadLine());
             }
 
             int numero = contaController.GerarNumero();
@@ -208,6 +210,7 @@ namespace ContaBancaria.Menu
                     continue;
                 }
 
+
                 auxAgencia = int.Parse(agenciaInput);
                 break;
             }
@@ -226,7 +229,9 @@ namespace ContaBancaria.Menu
                 break;
             }
 
-            //contaController.atualizar((auxNumero, auxAgencia, auxTitular));
+            Conta conta  = new ContaCorrente(auxNumero, auxAgencia, auxTitular, 0);
+
+            contaController.atualizar(conta);
 
 
         }

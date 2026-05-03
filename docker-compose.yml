@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8
+    container_name: mysql-conta-bancaria
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: contabancaria
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./SQL:/docker-entrypoint-initdb.d

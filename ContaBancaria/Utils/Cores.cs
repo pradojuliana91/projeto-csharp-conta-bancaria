@@ -4,11 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ContaBancaria.Enums
+namespace ContaBancaria.Utils;
+internal class Cores
 {
-    enum TipoConta
-    {
-        Corrente = 1,
-        Poupanca = 2
-    }
 }

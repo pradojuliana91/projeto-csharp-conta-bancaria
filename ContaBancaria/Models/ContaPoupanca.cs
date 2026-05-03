@@ -1,15 +1,31 @@
-﻿using ContaBancaria.Enums;
+﻿using ContaBancaria.Models.Enums;
 
 namespace ContaBancaria.Models
 {
     class ContaPoupanca : Conta
     {
-        public int Aniversario { get; protected set; }
+        public int Aniversario { get; set; }
 
         public ContaPoupanca(int numero, int agencia, string titular, int aniversario)
             : base(numero, agencia, TipoConta.Poupanca, titular)
         {
             Aniversario = aniversario;
+        }
+
+        public override bool Sacar(float valor)
+        {
+            if (Saldo < valor)
+            {
+                return false;
+            }
+
+            if (valor <= 0)
+            {
+                return false;
+            }
+
+            Saldo -= valor;
+            return true;
         }
 
         public void Visualizar()

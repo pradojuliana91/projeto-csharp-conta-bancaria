@@ -1,6 +1,6 @@
 ﻿using ContaBancaria.Models;
 
-namespace ContaBancaria.Interfaces
+namespace ContaBancaria.Repositories.Interfaces
 {
     interface IContaRepository
     {
