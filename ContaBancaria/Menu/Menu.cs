@@ -1,23 +1,25 @@
 ﻿using ContaBancaria.Controllers;
 using ContaBancaria.Models;
+using ContaBancaria.Models.Enums;
 using ContaBancaria.Utils;
+using System.ComponentModel.DataAnnotations;
 
 namespace ContaBancaria.Menu
 {
     class Menu
     {
-        private ContaController contaController = new ContaController();
+        private readonly ContaController contaController = new ContaController();
         public void Executar()
         {
-            int opcao;
+            int opcao = -1;
             do
             {
                 Cores.Linha();
                 Cores.Titulo("     SISTEMA CONTA BANCÁRIA      ");
                 Cores.Linha();
-                Cores.Menu("1. Criar Conta");
+                Cores.Menu("1. Buscar Conta");
                 Cores.Menu("2. Listar Contas");
-                Cores.Menu("3. Buscar Conta");
+                Cores.Menu("3. Criar Conta");
                 Cores.Menu("4. Atualizar Conta");
                 Cores.Menu("5. Deletar Conta");
                 Cores.Menu("6. Sacar");
@@ -28,19 +30,28 @@ namespace ContaBancaria.Menu
                 Cores.Linha();
                 Cores.Opcao("\nEscolha uma opção: ");
                 Console.ForegroundColor = ConsoleColor.White;
-                opcao = int.Parse(Console.ReadLine());
+                string? op = Console.ReadLine();
+                if (op == null || !int.TryParse(op, out opcao))
+                {
+                    Cores.Erro("\nOpção inválida, tente novamente\n");
+                    Console.WriteLine();
+                    Cores.Input("Pressione qualquer tecla para continuar...");
+                    Console.ReadKey();
+                    Console.Clear();
+                    continue;
+                }
                 Console.ResetColor();
 
                 switch (opcao)
                 {
                     case 1:
-                        CriarConta();
+                        BuscarPorAgenciaENumero();
                         break;
                     case 2:
                         ListarContas();
                         break;
                     case 3:
-                        BuscarPorNumero();
+                        CriarConta();
                         break;
                     case 4:
                         AtualizarConta();
@@ -71,416 +82,211 @@ namespace ContaBancaria.Menu
             } while (opcao != 0);
         }
 
-        private void CriarConta()
+        private void BuscarPorAgenciaENumero()
         {
-            Cores.Opcao("\nEscolha o tipo de conta\n");
-            Cores.Menu("\n1 - Conta Corrente");
-            Cores.Menu("2 - Conta Poupança");
-            Cores.Opcao("\nDigite a opção desejada: ");
-            int tipo = int.Parse(Console.ReadLine());
-
-            while (tipo != 1 && tipo != 2)
+            int inputAgencia = InputUtil.InputAgencia();
+            int inputNumeroConta = InputUtil.InputNumeroConta();
+            try
             {
-                Cores.Erro("\nTipo de conta inválido! Tente novamente.");
-
-                Cores.Opcao("\nEscolha o tipo de conta\n");
-                Cores.Menu("\n1 - Conta Corrente");
-                Cores.Menu("2 - Conta Poupança");
-                Cores.Opcao("\nDigite a opção desejada: ");
-                tipo = int.Parse(Console.ReadLine());
+                Conta conta = contaController.ProcurarPorAgenciaENumero(inputAgencia, inputNumeroConta);
+                Cores.Sucesso("Conta encontrada:\n" + conta.ExibirDadosConta());
             }
-
-            int numero = contaController.GerarNumero();
-
-            Cores.Sucesso($"\nNúmero da conta gerado: {numero}\n");
-
-            while (true)
+            catch (ValidationException vex)
             {
-                Cores.Input("Agência: ");
-                string agencia = Console.ReadLine();
-
-                if (string.IsNullOrEmpty(agencia))
-                {
-                    Cores.Input("\nCampo agência não pode ser vazio.\n\n");
-                    continue;
-                }
-
-                if (!agencia.All(char.IsDigit))
-                {
-                    Cores.Input("\nDigite apenas números! Tente novamente.\n\n");
-                    continue;
-                }
-
-                int numAgencia = int.Parse(agencia);
-
-                if(numAgencia < 4)
-                {
-                    Cores.Input("\nNúmero de agência inválido! Deve conter pelo menos 4 dígitos. Tente novamente.\n\n");
-                    continue;
-                }
-
-                Cores.Input("Titular: ");
-                string titular = Console.ReadLine();
-
-                if (string.IsNullOrWhiteSpace(titular))
-                {
-                    Cores.Input("Titular inválido! Tente novamente.\n");
-                    continue;
-                }
-
-                if (tipo == 1)
-                {
-                    Cores.Input("Limite da Conta Corrente: ");
-                    float limite = float.Parse(Console.ReadLine());
-
-                    contaController.cadastrar(
-                        new ContaCorrente(numero, numAgencia, titular, limite));
-
-                    break;
-                }
-                else
-                {
-                    int aniversario = DateTime.Now.Day;
-                    Cores.Aviso($"Dia de aniversário da conta: {aniversario}");
-
-                    contaController.cadastrar(
-                        new ContaPoupanca(numero, numAgencia, titular, aniversario));
-
-                    break;
-                }
+                Cores.Aviso(vex.Message);
+            }
+            catch (Exception ex)
+            {
+                Cores.Erro($"Erro ao buscar com agência {inputAgencia} e número {inputNumeroConta}, msg:{ex.Message}.");
             }
         }
+
         private void ListarContas()
         {
-            contaController.listarTodas();
-        }
-        private void BuscarPorNumero()
-        {
-            int auxNumero;
-
-            while (true)
+            try
             {
-                Cores.Input("\nDigite o número da conta (4 digitos): ");
-                string numeroConta = Console.ReadLine();
+                List<Conta> listaContas = contaController.ListarTodas();
 
-                if (string.IsNullOrWhiteSpace(numeroConta))
+                Cores.Sucesso("Conta(s) encontrada(s):");
+                foreach (var conta in listaContas)
                 {
-                    Cores.Erro("O campo não pode ser vazio. Tente novamente.\n");
-                    continue;
+                    Cores.Sucesso(conta.ExibirDadosConta());
                 }
-
-                if (numeroConta.Length != 4)
-                {
-                    Cores.Erro("Número de conta inválido! Deve conter exatamente 4 dígitos. Tente novamente.\n");
-                    continue;
-                }
-
-                if (!numeroConta.All(char.IsDigit))
-                {
-                    Cores.Erro("Digite apenas números!\n");
-                    continue;
-                }
-
-                auxNumero = int.Parse(numeroConta);
-
-                break;
             }
-
-            contaController.procurarPorNumero(auxNumero);
-
-            
+            catch (ValidationException vex)
+            {
+                Cores.Aviso(vex.Message);
+            }
+            catch (Exception ex)
+            {
+                Cores.Erro($"Erro ao buscar contas, msg:{ex.Message}.");
+            }
         }
+
+        private void CriarConta()
+        {
+            TipoConta inputTipoConta = InputUtil.InputTipoConta();
+            int inputAgencia = InputUtil.InputAgencia();
+            string inputTitular = InputUtil.InputTitular();
+
+            int numeroConta = contaController.GerarNumero(inputAgencia);
+
+            Conta? contaCadastro = null;
+            try
+            {
+                switch (inputTipoConta)
+                {
+                    case TipoConta.Corrente:
+                        float inputLimie = InputUtil.InputLimite();
+                        contaCadastro = new ContaCorrente(null, inputAgencia, numeroConta, inputTitular, 0f, inputLimie);
+                        break;
+                    case TipoConta.Poupanca:
+                        int inputAniversario = InputUtil.InputAniversario();
+                        contaCadastro = new ContaPoupanca(null, inputAgencia, numeroConta, inputTitular, 0f, inputAniversario);
+                        break;
+                }
+                contaController.Cadastrar(contaCadastro);
+
+                Cores.Sucesso("Conta cadastrada:\n" + contaCadastro!.ExibirDadosConta());
+            }
+            catch (ValidationException vex)
+            {
+                Cores.Aviso(vex.Message);
+            }
+            catch (Exception ex)
+            {
+                Cores.Erro($"Erro ao criar conta, msg:{ex.Message}.");
+            }
+        }
+
         private void AtualizarConta()
         {
-            int auxNumero;
+            int inputAgencia = InputUtil.InputAgencia();
+            int inputNumeroConta = InputUtil.InputNumeroConta();
+            string inputTitular = InputUtil.InputTitular();
 
-            while (true)
+            try
             {
-                Cores.Input("Digite o número da conta (4 dígitos): ");
-                string numeroConta = Console.ReadLine();
-
-                if (string.IsNullOrWhiteSpace(numeroConta))
+                Conta? contaAtualizar = contaController.ProcurarPorAgenciaENumero(inputAgencia, inputNumeroConta);
+                if (contaAtualizar == null)
                 {
-                    Cores.Erro("O campo não pode ser vazio. Tente novamente.\n");
-                    continue;
+                    Cores.Aviso($"Não existe conta para está agência {inputAgencia} e número {inputNumeroConta}.");
+                    return;
                 }
 
-                if (numeroConta.Length != 4)
+                contaAtualizar.Titular = inputTitular;
+
+                switch (contaAtualizar.Tipo)
                 {
-                    Cores.Erro("Número de conta inválido! Deve conter exatamente 4 dígitos. Tente novamente.\n");
-                    continue;
+                    case TipoConta.Corrente:
+                        float inputLimie = InputUtil.InputLimite();
+                        ((ContaCorrente)contaAtualizar).Limite = inputLimie;
+                        break;
+                    case TipoConta.Poupanca:
+                        int inputAniversario = InputUtil.InputAniversario();
+                        contaAtualizar.Titular = inputTitular;
+                        ((ContaPoupanca)contaAtualizar).Aniversario = inputAniversario;
+                        break;
                 }
 
-                if (!numeroConta.All(char.IsDigit))
-                {
-                    Cores.Erro("Digite apenas números!\n");
-                    continue;
-                }
+                contaController.Atualizar(contaAtualizar);
+                Cores.Sucesso($"Conta atualizada com sucesso:\n" + contaAtualizar.ExibirDadosConta());
 
-                auxNumero = int.Parse(numeroConta);
-                break;
             }
-
-            int auxAgencia;
-            while (true)
+            catch (ValidationException vex)
             {
-                Cores.Input("Nova agência: ");
-                string agenciaInput = Console.ReadLine();
-
-                if (string.IsNullOrWhiteSpace(agenciaInput))
-                {
-                    Cores.Erro("O campo não pode ser vazio. Tente novamente.\n");
-                    continue;
-                }
-
-                if (!agenciaInput.All(char.IsDigit))
-                {
-                    Cores.Erro("Digite apenas números!\n");
-                    continue;
-                }
-
-
-                auxAgencia = int.Parse(agenciaInput);
-                break;
+                Cores.Aviso(vex.Message);
             }
-
-            string auxTitular;
-            while (true)
+            catch (Exception ex)
             {
-                Cores.Input("Novo titular: ");
-                auxTitular = Console.ReadLine();
-
-                if (string.IsNullOrWhiteSpace(auxTitular))
-                {
-                    Cores.Erro("O campo não pode ser vazio. Tente novamente.\n");
-                    continue;
-                }
-                break;
+                Cores.Erro($"Erro ao atualizar conta, msg:{ex.Message}.");
+                return;
             }
-
-            Conta conta = new ContaCorrente(auxNumero, auxAgencia, auxTitular, 0);
-
-            contaController.atualizar(conta);
         }
+
         private void DeletarConta()
         {
-            int auxNumero;
+            int inputAgencia = InputUtil.InputAgencia();
+            int inputNumeroConta = InputUtil.InputNumeroConta();
 
-            while (true)
+            try
             {
-                Cores.Input("Digite o número da conta (4 dígitos): ");
-                string numeroConta = Console.ReadLine();
-
-                if (string.IsNullOrWhiteSpace(numeroConta))
-                {
-                    Cores.Erro("O campo não pode ser vazio. Tente novamente.\n");
-                    continue;
-                }
-
-                if (numeroConta.Length != 4)
-                {
-                    Cores.Erro("Número de conta inválido. Tente novamente.\n");
-                    continue;
-                }
-
-                if (!numeroConta.All(char.IsDigit))
-                {
-                    Cores.Erro("Digite apenas números. Tente novamente.\n");
-                    continue;
-                }
-                auxNumero = int.Parse(numeroConta);
-                break;
+                contaController.Deletar(inputAgencia, inputNumeroConta);
             }
-
-            contaController.deletar(auxNumero);
+            catch (ValidationException vex)
+            {
+                Cores.Aviso(vex.Message);
+            }
+            catch (Exception ex)
+            {
+                Cores.Erro($"Erro ao deletar conta, msg:{ex.Message}.");
+                return;
+            }
         }
+
         private void Sacar()
         {
-            int auxNumero;
-            while (true)
+            int inputAgencia = InputUtil.InputAgencia();
+            int inputNumeroConta = InputUtil.InputNumeroConta();
+            float inputValorSacar = InputUtil.InputValorSacar();
+
+            try
             {
-                Cores.Input("Digite o número da conta (4 dígitos): ");
-                string numeroConta = Console.ReadLine();
-
-                if (string.IsNullOrWhiteSpace(numeroConta))
-                {
-                    Cores.Erro("O campo não pode ser vazio. Tente novamente.\n");
-                    continue;
-                }
-
-                if (numeroConta.Length != 4)
-                {
-                    Cores.Erro("Número de conta inválido. Tente novamente.\n");
-                    continue;
-                }
-
-                if (!numeroConta.All(char.IsDigit))
-                {
-                    Cores.Erro("Digite apenas números. Tente novamente.\n");
-                    continue;
-                }
-
-                auxNumero = int.Parse(numeroConta);
-                break;
+                contaController.Sacar(inputAgencia, inputNumeroConta, inputValorSacar);
             }
-
-            float auxValor;
-            while (true)
+            catch (ValidationException vex)
             {
-                Cores.Input("Valor do saque: ");
-                string valor = Console.ReadLine();
-
-                if (string.IsNullOrWhiteSpace(valor))
-                {
-                    Cores.Erro("O campo não pode ser vazio. Tente novamente.\n");
-                    continue;
-                }
-
-                auxValor = float.Parse(valor);
-
-                if (auxValor <= 0)
-                {
-                    Cores.Erro("O valor deve ser maior que zero. Tente novamente.\n");
-                    continue;
-                }
-                break;
+                Cores.Aviso(vex.Message);
             }
-
-            contaController.sacar(auxNumero, auxValor);
-
+            catch (Exception ex)
+            {
+                Cores.Erro($"Erro ao sacar, msg:{ex.Message}.");
+                return;
+            }
         }
+
         private void Depositar()
         {
-            int auxNumero;
+            int inputAgencia = InputUtil.InputAgencia();
+            int inputNumeroConta = InputUtil.InputNumeroConta();
+            float inputValorDepositar = InputUtil.InputValorDepositar();
 
-            while (true)
+            try
             {
-                Cores.Input("Digite o número da conta (4 dígitos): ");
-                string numeroConta = Console.ReadLine();
-
-                if (string.IsNullOrWhiteSpace(numeroConta))
-                {
-                    Cores.Erro("O campo não pode ser vazio. Tente novamente.\n");
-                    continue;
-                }
-
-                if (numeroConta.Length != 4)
-                {
-                    Cores.Erro("Número de conta inválido. Tente novamente.\n");
-                    continue;
-                }
-
-                if (!numeroConta.All(char.IsDigit))
-                {
-                    Cores.Erro("Digite apenas números. Tente novamente.\n");
-                    continue;
-                }
-                auxNumero = int.Parse(numeroConta);
-                break;
+                contaController.Depositar(inputAgencia, inputNumeroConta, inputValorDepositar);
             }
-
-            float auxValor;
-            while (true)
+            catch (ValidationException vex)
             {
-                Cores.Input("Digite o valor do depósito: ");
-                string valor = Console.ReadLine();
-
-                if (string.IsNullOrWhiteSpace(valor))
-                {
-                    Cores.Erro("O campo não pode ser vazio. Tente novamente.\n");
-                    continue;
-                }
-
-                auxValor = float.Parse(valor);
-
-                if (auxValor <= 0)
-                {
-                    Cores.Erro("O valor deve ser maior que zero. Tente novamente.\n");
-                    continue;
-                }
-                break;
+                Cores.Aviso(vex.Message);
             }
-
-            contaController.depositar(auxNumero, auxValor);
+            catch (Exception ex)
+            {
+                Cores.Erro($"Erro ao depositar, msg:{ex.Message}.");
+                return;
+            }
         }
+
         private void Transferir()
         {
-            int auxNumeroOrigem, auxNumeroDestino;
+            int inputAgenciaOrigem = InputUtil.InputAgenciaOriem();
+            int inputNumeroContaOrigem = InputUtil.InputNumeroContaOrigem();
+            int inputAgenciaDestino = InputUtil.InputAgenciaDestino();
+            int inputNumeroContaDestino = InputUtil.InputNumeroContaDestino();
+            float inputValorTransferencia = InputUtil.InputValorTransferir();
 
-            while (true)
+            try
             {
-                Cores.Input("Digite o número da conta de origem (4 dígitos): ");
-                string numeroOrigem = Console.ReadLine();
-
-                if (string.IsNullOrWhiteSpace(numeroOrigem))
-                {
-                    Cores.Erro("O campo não pode ser vazio. Tente novamente.\n");
-                    continue;
-                }
-
-                if (numeroOrigem.Length != 4)
-                {
-                    Cores.Erro("Número de conta inválido. Tente novamente.\n");
-                    continue;
-                }
-
-                if (!numeroOrigem.All(char.IsDigit))
-                {
-                    Cores.Erro("Digite apenas números. Tente novamente.\n");
-                    continue;
-                }
-                auxNumeroOrigem = int.Parse(numeroOrigem);
-                break;
+                contaController.Transferir(inputAgenciaOrigem, inputNumeroContaOrigem, inputAgenciaDestino, inputNumeroContaDestino, inputValorTransferencia);
             }
-
-            while (true)
+            catch (ValidationException vex)
             {
-                Cores.Input("Digite o número da conta de destino (4 dígitos): ");
-                string numeroDestino = Console.ReadLine();
-
-                if (string.IsNullOrWhiteSpace(numeroDestino))
-                {
-                    Cores.Erro("O campo não pode ser vazio. Tente novamente.\n");
-                    continue;
-                }
-
-                if (numeroDestino.Length != 4)
-                {
-                    Cores.Erro("Número de conta inválido. Tente novamente.\n");
-                    continue;
-                }
-
-                if (!numeroDestino.All(char.IsDigit))
-                {
-                    Cores.Erro("Digite apenas números. Tente novamente.\n");
-                    continue;
-                }
-
-                auxNumeroDestino = int.Parse(numeroDestino);
-                break;
+                Cores.Aviso(vex.Message);
             }
-
-            float auxValor;
-            while (true)
+            catch (Exception ex)
             {
-                Cores.Input("Digite o valor da transferência: ");
-                string valor = Console.ReadLine();
-
-                if (string.IsNullOrWhiteSpace(valor))
-                {
-                    Cores.Erro("O campo não pode ser vazio. Tente novamente.\n");
-                    continue;
-                }
-                auxValor = float.Parse(valor);
-                if (auxValor <= 0)
-                {
-                    Cores.Erro("O valor deve ser maior que zero. Tente novamente.\n");
-                    continue;
-                }
-                break;
+                Cores.Erro($"Erro ao transferir, msg:{ex.Message}.");
+                return;
             }
-
-            contaController.transferir(auxNumeroOrigem, auxNumeroDestino, auxValor);
         }
     }
 }

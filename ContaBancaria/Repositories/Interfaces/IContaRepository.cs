@@ -6,8 +6,9 @@ namespace ContaBancaria.Repositories.Interfaces
     {
         Conta? ProcurarPorAgenciaENumero(int agencia, int numero);
         List<Conta> ListarTodas();
+        int MaiorNumerContaPorAgencia(int agencia);
         long? Cadastrar(Conta conta);
-        void Atualizar(int agenciaAtual, int numeroAtual, Conta conta);
+        void Atualizar(Conta conta);
        
         void Deletar(int agencia, int numero);
         void Sacar(int agencia, int numero, float valor);

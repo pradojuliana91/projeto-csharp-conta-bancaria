@@ -21,14 +21,11 @@ namespace ContaBancaria.Models
             Saldo = saldo;
         }
 
-        public abstract bool Sacar(float valor);
-
-        public virtual void Depositar(float valor)
+        public virtual string ExibirDadosConta()
         {
-            if (valor > 0)
-            {
-                Saldo += valor;
-            }
+            return $"Tipo: {Enum.GetName(Tipo)}, Agência: {Agencia}, Número: {Numero}, Titular: {Titular}, Saldo: {Saldo}";
         }
+
+        public abstract bool Sacar(float valor);     
     }
 }

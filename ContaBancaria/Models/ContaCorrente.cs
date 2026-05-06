@@ -14,7 +14,7 @@ namespace ContaBancaria.Models
 
         public override bool Sacar(float valor)
         {
-            if (Saldo + Limite < valor)
+            if ((Saldo + Limite) < valor)
             {
                 return false;
             }
@@ -26,6 +26,11 @@ namespace ContaBancaria.Models
 
             Saldo -= valor;
             return true;
+        }
+
+        public override string ExibirDadosConta()
+        {
+            return base.ExibirDadosConta() + $", Limite: {Limite}"; 
         }
     }
 }

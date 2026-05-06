@@ -121,6 +121,33 @@ class ContaRepository : IContaRepository
         }
     }
 
+    public int MaiorNumerContaPorAgencia(int agencia)
+    {
+        using (var conexao = Database.Conexao())
+        {
+            conexao.Open();
+
+            string sql = @"SELECT 
+                                COALESCE(MAX(numero), 0) + 1
+                           FROM 
+                                contas 
+                           WHERE 
+                                agencia = @agencia";
+
+            using (var comando = new MySqlCommand(sql, conexao))
+            {
+                comando.Parameters.AddWithValue("@agencia", agencia);
+                int id = 1;
+                object result = comando.ExecuteScalar();
+                if (result != null)
+                {
+                    id = Convert.ToInt32(result);
+                }
+                return id;
+            }
+        }
+    }
+
     public long? Cadastrar(Conta conta)
     {
         using (var conexao = Database.Conexao())
@@ -168,32 +195,24 @@ class ContaRepository : IContaRepository
     }
 
 
-    public void Atualizar(int agenciaAtual, int numeroAtual, Conta conta)
+    public void Atualizar(Conta conta)
     {
         using (var conexao = Database.Conexao())
         {
             conexao.Open();
 
             string sql = @"UPDATE contas SET 
-                                agencia = @agencia, 
-                                numero = @numero,
-                                titular = @titular, 
-                                saldo = @saldo, 
+                                titular = @titular,                                 
                                 limite = @limite, 
                                 aniversario = @aniversario 
                           WHERE 
-                                agencia = @agenciaAtual 
-                                AND numero = @numeroAtual";
+                                agencia = @agencia 
+                                AND numero = @numero";
 
             using (var comando = new MySqlCommand(sql, conexao))
             {
-                comando.Parameters.AddWithValue("@agencia", conta.Agencia);
-                comando.Parameters.AddWithValue("@numero", conta.Numero);
                 comando.Parameters.AddWithValue("@titular", conta.Titular);
-                comando.Parameters.AddWithValue("@saldo", conta.Saldo);
-                comando.Parameters.AddWithValue("@agenciaAtual", agenciaAtual);
-                comando.Parameters.AddWithValue("@numeroAtual", numeroAtual);
-
+                                                             
                 if (conta.Tipo == TipoConta.Corrente && conta is ContaCorrente contaCorrente)
                 {
                     comando.Parameters.AddWithValue("@limite", contaCorrente.Limite);
@@ -209,6 +228,9 @@ class ContaRepository : IContaRepository
                     comando.Parameters.AddWithValue("@limite", DBNull.Value);
                     comando.Parameters.AddWithValue("@aniversario", DBNull.Value);
                 }
+
+                comando.Parameters.AddWithValue("@agencia", conta.Agencia);
+                comando.Parameters.AddWithValue("@numero", conta.Numero);
 
                 comando.ExecuteNonQuery();
             }

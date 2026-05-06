@@ -12,6 +12,11 @@ namespace ContaBancaria.Models
             Aniversario = aniversario;
         }
 
+        public override string ExibirDadosConta()
+        {
+            return base.ExibirDadosConta() + $", Aniversario: {Aniversario}";
+        }
+
         public override bool Sacar(float valor)
         {
             if (Saldo < valor)

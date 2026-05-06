@@ -1,5 +1,4 @@
-﻿using ContaBancaria.Utils;
-using MySql.Data.MySqlClient;
+﻿using MySql.Data.MySqlClient;
 
 namespace ContaBancaria.Utils
 {

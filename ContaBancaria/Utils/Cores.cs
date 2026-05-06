@@ -1,6 +1,4 @@
-﻿using System.Net.NetworkInformation;
-
-namespace ContaBancaria.Utils
+﻿namespace ContaBancaria.Utils
 {
     class Cores
     {
