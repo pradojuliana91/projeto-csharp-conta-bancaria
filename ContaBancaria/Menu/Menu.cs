@@ -1,6 +1,6 @@
 ﻿using ContaBancaria.Controllers;
 using ContaBancaria.Models;
-using System.ComponentModel;
+using ContaBancaria.Utils;
 
 namespace ContaBancaria.Menu
 {
@@ -12,22 +12,24 @@ namespace ContaBancaria.Menu
             int opcao;
             do
             {
-                Console.WriteLine("=================================");
-                Console.WriteLine("     SISTEMA CONTA BANCÁRIA      ");
-                Console.WriteLine("=================================");
-                Console.WriteLine("1. Criar Conta");
-                Console.WriteLine("2. Listar Contas");
-                Console.WriteLine("3. Buscar Conta");
-                Console.WriteLine("4. Atualizar Conta");
-                Console.WriteLine("5. Deletar Conta");
-                Console.WriteLine("6. Sacar");
-                Console.WriteLine("7. Depositar");
-                Console.WriteLine("8. Transferir");
-                Console.WriteLine("0. Sair");
-                Console.WriteLine("=================================");
-                Console.Write("Escolha uma opção: ");
+                Cores.Linha();
+                Cores.Titulo("     SISTEMA CONTA BANCÁRIA      ");
+                Cores.Linha();
+                Cores.Menu("1. Criar Conta");
+                Cores.Menu("2. Listar Contas");
+                Cores.Menu("3. Buscar Conta");
+                Cores.Menu("4. Atualizar Conta");
+                Cores.Menu("5. Deletar Conta");
+                Cores.Menu("6. Sacar");
+                Cores.Menu("7. Depositar");
+                Cores.Menu("8. Transferir");
+                Cores.Menu("0. Sair");
 
+                Cores.Linha();
+                Cores.Opcao("\nEscolha uma opção: ");
+                Console.ForegroundColor = ConsoleColor.White;
                 opcao = int.Parse(Console.ReadLine());
+                Console.ResetColor();
 
                 switch (opcao)
                 {
@@ -56,10 +58,14 @@ namespace ContaBancaria.Menu
                         Transferir();
                         break;
                     case 0:
-                        Console.WriteLine("Saindo do sistema...");
+                        Cores.Saida("\nSaindo do sistema...");
                         break;
                     default:
-                        Console.WriteLine("Opção inválida. Tente novamente.");
+                        Cores.Input("\nOpção inválida, tente novamente\n");
+                        Console.WriteLine();
+                        Cores.Input("Pressione qualquer tecla para continuar...");
+                        Console.ReadKey();
+                        Console.Clear();
                         break;
                 }
             } while (opcao != 0);
@@ -67,58 +73,78 @@ namespace ContaBancaria.Menu
 
         private void CriarConta()
         {
-            Console.WriteLine("Escolha o tipo de conta: ");
-            Console.WriteLine("1 - Corrente | 2 - Poupança");
+            Cores.Opcao("\nEscolha o tipo de conta\n");
+            Cores.Menu("\n1 - Conta Corrente");
+            Cores.Menu("2 - Conta Poupança");
+            Cores.Opcao("\nDigite a opção desejada: ");
             int tipo = int.Parse(Console.ReadLine());
 
             while (tipo != 1 && tipo != 2)
             {
-                Console.WriteLine("Tipo de conta inválido! Tente novamente.\n");
-                Console.WriteLine("Escolha o tipo de conta: ");
-                Console.WriteLine("1 - Corrente | 2 - Poupança");
+                Cores.Erro("\nTipo de conta inválido! Tente novamente.");
+
+                Cores.Opcao("\nEscolha o tipo de conta\n");
+                Cores.Menu("\n1 - Conta Corrente");
+                Cores.Menu("2 - Conta Poupança");
+                Cores.Opcao("\nDigite a opção desejada: ");
                 tipo = int.Parse(Console.ReadLine());
             }
 
             int numero = contaController.GerarNumero();
-            Console.WriteLine($"Número da conta gerado: {numero}");
+
+            Cores.Sucesso($"\nNúmero da conta gerado: {numero}\n");
 
             while (true)
             {
-                Console.Write("Agência: ");
-                int agencia = int.Parse(Console.ReadLine());
+                Cores.Input("Agência: ");
+                string agencia = Console.ReadLine();
 
-                if (agencia <= 0)
+                if (string.IsNullOrEmpty(agencia))
                 {
-                    Console.WriteLine("Agência inválida! Tente novamente.\n");
+                    Cores.Input("\nCampo agência não pode ser vazio.\n\n");
                     continue;
                 }
 
-                Console.Write("Titular: ");
+                if (!agencia.All(char.IsDigit))
+                {
+                    Cores.Input("\nDigite apenas números! Tente novamente.\n\n");
+                    continue;
+                }
+
+                int numAgencia = int.Parse(agencia);
+
+                if(numAgencia < 4)
+                {
+                    Cores.Input("\nNúmero de agência inválido! Deve conter pelo menos 4 dígitos. Tente novamente.\n\n");
+                    continue;
+                }
+
+                Cores.Input("Titular: ");
                 string titular = Console.ReadLine();
 
                 if (string.IsNullOrWhiteSpace(titular))
                 {
-                    Console.WriteLine("Titular inválido! Tente novamente.\n");
+                    Cores.Input("Titular inválido! Tente novamente.\n");
                     continue;
                 }
 
                 if (tipo == 1)
                 {
-                    Console.Write("Limite da Conta Corrente: ");
+                    Cores.Input("Limite da Conta Corrente: ");
                     float limite = float.Parse(Console.ReadLine());
 
                     contaController.cadastrar(
-                        new ContaCorrente(numero, agencia, titular, limite));
+                        new ContaCorrente(numero, numAgencia, titular, limite));
 
                     break;
                 }
                 else
                 {
                     int aniversario = DateTime.Now.Day;
-                    Console.WriteLine($"Aniversário definido automaticamente: {aniversario}");
+                    Cores.Aviso($"Dia de aniversário da conta: {aniversario}");
 
                     contaController.cadastrar(
-                        new ContaPoupanca(numero, agencia, titular, aniversario));
+                        new ContaPoupanca(numero, numAgencia, titular, aniversario));
 
                     break;
                 }
@@ -131,26 +157,27 @@ namespace ContaBancaria.Menu
         private void BuscarPorNumero()
         {
             int auxNumero;
+
             while (true)
             {
-                Console.Write("Digite o número da conta (4 digitos): ");
+                Cores.Input("\nDigite o número da conta (4 digitos): ");
                 string numeroConta = Console.ReadLine();
 
                 if (string.IsNullOrWhiteSpace(numeroConta))
                 {
-                    Console.WriteLine("O campo não pode ser vazio. Tente novamente.\n");
+                    Cores.Erro("O campo não pode ser vazio. Tente novamente.\n");
                     continue;
                 }
 
                 if (numeroConta.Length != 4)
                 {
-                    Console.WriteLine("Número de conta inválido! Deve conter exatamente 4 dígitos. Tente novamente.\n");
+                    Cores.Erro("Número de conta inválido! Deve conter exatamente 4 dígitos. Tente novamente.\n");
                     continue;
                 }
 
                 if (!numeroConta.All(char.IsDigit))
                 {
-                    Console.WriteLine("Digite apenas números!\n");
+                    Cores.Erro("Digite apenas números!\n");
                     continue;
                 }
 
@@ -160,6 +187,8 @@ namespace ContaBancaria.Menu
             }
 
             contaController.procurarPorNumero(auxNumero);
+
+            
         }
         private void AtualizarConta()
         {
@@ -167,24 +196,24 @@ namespace ContaBancaria.Menu
 
             while (true)
             {
-                Console.Write("Digite o número da conta (4 dígitos): ");
+                Cores.Input("Digite o número da conta (4 dígitos): ");
                 string numeroConta = Console.ReadLine();
 
                 if (string.IsNullOrWhiteSpace(numeroConta))
                 {
-                    Console.WriteLine("O campo não pode ser vazio. Tente novamente.\n");
+                    Cores.Erro("O campo não pode ser vazio. Tente novamente.\n");
                     continue;
                 }
 
                 if (numeroConta.Length != 4)
                 {
-                    Console.WriteLine("Número de conta inválido! Deve conter exatamente 4 dígitos. Tente novamente.\n");
+                    Cores.Erro("Número de conta inválido! Deve conter exatamente 4 dígitos. Tente novamente.\n");
                     continue;
                 }
 
                 if (!numeroConta.All(char.IsDigit))
                 {
-                    Console.WriteLine("Digite apenas números!\n");
+                    Cores.Erro("Digite apenas números!\n");
                     continue;
                 }
 
@@ -195,18 +224,18 @@ namespace ContaBancaria.Menu
             int auxAgencia;
             while (true)
             {
-                Console.Write("Nova agência: ");
+                Cores.Input("Nova agência: ");
                 string agenciaInput = Console.ReadLine();
 
                 if (string.IsNullOrWhiteSpace(agenciaInput))
                 {
-                    Console.WriteLine("O campo não pode ser vazio. Tente novamente.\n");
+                    Cores.Erro("O campo não pode ser vazio. Tente novamente.\n");
                     continue;
                 }
 
                 if (!agenciaInput.All(char.IsDigit))
                 {
-                    Console.WriteLine("Digite apenas números!\n");
+                    Cores.Erro("Digite apenas números!\n");
                     continue;
                 }
 
@@ -218,22 +247,20 @@ namespace ContaBancaria.Menu
             string auxTitular;
             while (true)
             {
-                Console.Write("Novo titular: ");
+                Cores.Input("Novo titular: ");
                 auxTitular = Console.ReadLine();
 
                 if (string.IsNullOrWhiteSpace(auxTitular))
                 {
-                    Console.WriteLine("O campo não pode ser vazio. Tente novamente.\n");
+                    Cores.Erro("O campo não pode ser vazio. Tente novamente.\n");
                     continue;
                 }
                 break;
             }
 
-            Conta conta  = new ContaCorrente(auxNumero, auxAgencia, auxTitular, 0);
+            Conta conta = new ContaCorrente(auxNumero, auxAgencia, auxTitular, 0);
 
             contaController.atualizar(conta);
-
-
         }
         private void DeletarConta()
         {
@@ -241,24 +268,24 @@ namespace ContaBancaria.Menu
 
             while (true)
             {
-                Console.Write("Digite o número da conta (4 dígitos): ");
+                Cores.Input("Digite o número da conta (4 dígitos): ");
                 string numeroConta = Console.ReadLine();
 
                 if (string.IsNullOrWhiteSpace(numeroConta))
                 {
-                    Console.WriteLine("O campo não pode ser vazio. Tente novamente.\n");
+                    Cores.Erro("O campo não pode ser vazio. Tente novamente.\n");
                     continue;
                 }
 
                 if (numeroConta.Length != 4)
                 {
-                    Console.WriteLine("Número de conta inválido. Tente novamente.\n");
+                    Cores.Erro("Número de conta inválido. Tente novamente.\n");
                     continue;
                 }
 
                 if (!numeroConta.All(char.IsDigit))
                 {
-                    Console.WriteLine("Digite apenas números. Tente novamente.\n");
+                    Cores.Erro("Digite apenas números. Tente novamente.\n");
                     continue;
                 }
                 auxNumero = int.Parse(numeroConta);
@@ -270,26 +297,26 @@ namespace ContaBancaria.Menu
         private void Sacar()
         {
             int auxNumero;
-            while (true) 
+            while (true)
             {
-                Console.Write("Digite o número da conta (4 dígitos): ");
+                Cores.Input("Digite o número da conta (4 dígitos): ");
                 string numeroConta = Console.ReadLine();
 
                 if (string.IsNullOrWhiteSpace(numeroConta))
                 {
-                    Console.WriteLine("O campo não pode ser vazio. Tente novamente.\n");
+                    Cores.Erro("O campo não pode ser vazio. Tente novamente.\n");
                     continue;
                 }
 
                 if (numeroConta.Length != 4)
                 {
-                    Console.WriteLine("Número de conta inválido. Tente novamente.\n");
+                    Cores.Erro("Número de conta inválido. Tente novamente.\n");
                     continue;
                 }
 
                 if (!numeroConta.All(char.IsDigit))
                 {
-                    Console.WriteLine("Digite apenas números. Tente novamente.\n");
+                    Cores.Erro("Digite apenas números. Tente novamente.\n");
                     continue;
                 }
 
@@ -300,12 +327,12 @@ namespace ContaBancaria.Menu
             float auxValor;
             while (true)
             {
-                Console.Write("Valor do saque: ");
+                Cores.Input("Valor do saque: ");
                 string valor = Console.ReadLine();
 
                 if (string.IsNullOrWhiteSpace(valor))
                 {
-                    Console.WriteLine("O campo não pode ser vazio. Tente novamente.\n");
+                    Cores.Erro("O campo não pode ser vazio. Tente novamente.\n");
                     continue;
                 }
 
@@ -313,7 +340,7 @@ namespace ContaBancaria.Menu
 
                 if (auxValor <= 0)
                 {
-                    Console.WriteLine("O valor deve ser maior que zero. Tente novamente.\n");
+                    Cores.Erro("O valor deve ser maior que zero. Tente novamente.\n");
                     continue;
                 }
                 break;
@@ -328,24 +355,24 @@ namespace ContaBancaria.Menu
 
             while (true)
             {
-                Console.Write("Digite o número da conta (4 dígitos): ");
+                Cores.Input("Digite o número da conta (4 dígitos): ");
                 string numeroConta = Console.ReadLine();
 
                 if (string.IsNullOrWhiteSpace(numeroConta))
                 {
-                    Console.WriteLine("O campo não pode ser vazio. Tente novamente.\n");
+                    Cores.Erro("O campo não pode ser vazio. Tente novamente.\n");
                     continue;
                 }
 
                 if (numeroConta.Length != 4)
                 {
-                    Console.WriteLine("Número de conta inválido. Tente novamente.\n");
+                    Cores.Erro("Número de conta inválido. Tente novamente.\n");
                     continue;
                 }
 
                 if (!numeroConta.All(char.IsDigit))
                 {
-                    Console.WriteLine("Digite apenas números. Tente novamente.\n");
+                    Cores.Erro("Digite apenas números. Tente novamente.\n");
                     continue;
                 }
                 auxNumero = int.Parse(numeroConta);
@@ -355,12 +382,12 @@ namespace ContaBancaria.Menu
             float auxValor;
             while (true)
             {
-                Console.Write("Digite o valor do depósito: ");
+                Cores.Input("Digite o valor do depósito: ");
                 string valor = Console.ReadLine();
 
                 if (string.IsNullOrWhiteSpace(valor))
                 {
-                    Console.WriteLine("O campo não pode ser vazio. Tente novamente.\n");
+                    Cores.Erro("O campo não pode ser vazio. Tente novamente.\n");
                     continue;
                 }
 
@@ -368,7 +395,7 @@ namespace ContaBancaria.Menu
 
                 if (auxValor <= 0)
                 {
-                    Console.WriteLine("O valor deve ser maior que zero. Tente novamente.\n");
+                    Cores.Erro("O valor deve ser maior que zero. Tente novamente.\n");
                     continue;
                 }
                 break;
@@ -382,24 +409,24 @@ namespace ContaBancaria.Menu
 
             while (true)
             {
-                Console.Write("Digite o número da conta de origem (4 dígitos): ");
+                Cores.Input("Digite o número da conta de origem (4 dígitos): ");
                 string numeroOrigem = Console.ReadLine();
 
                 if (string.IsNullOrWhiteSpace(numeroOrigem))
                 {
-                    Console.WriteLine("O campo não pode ser vazio. Tente novamente.\n");
+                    Cores.Erro("O campo não pode ser vazio. Tente novamente.\n");
                     continue;
                 }
 
                 if (numeroOrigem.Length != 4)
                 {
-                    Console.WriteLine("Número de conta inválido. Tente novamente.\n");
+                    Cores.Erro("Número de conta inválido. Tente novamente.\n");
                     continue;
                 }
 
                 if (!numeroOrigem.All(char.IsDigit))
                 {
-                    Console.WriteLine("Digite apenas números. Tente novamente.\n");
+                    Cores.Erro("Digite apenas números. Tente novamente.\n");
                     continue;
                 }
                 auxNumeroOrigem = int.Parse(numeroOrigem);
@@ -408,24 +435,24 @@ namespace ContaBancaria.Menu
 
             while (true)
             {
-                Console.Write("Digite o número da conta de destino (4 dígitos): ");
+                Cores.Input("Digite o número da conta de destino (4 dígitos): ");
                 string numeroDestino = Console.ReadLine();
 
                 if (string.IsNullOrWhiteSpace(numeroDestino))
                 {
-                    Console.WriteLine("O campo não pode ser vazio. Tente novamente.\n");
+                    Cores.Erro("O campo não pode ser vazio. Tente novamente.\n");
                     continue;
                 }
 
                 if (numeroDestino.Length != 4)
                 {
-                    Console.WriteLine("Número de conta inválido. Tente novamente.\n");
+                    Cores.Erro("Número de conta inválido. Tente novamente.\n");
                     continue;
                 }
 
                 if (!numeroDestino.All(char.IsDigit))
                 {
-                    Console.WriteLine("Digite apenas números. Tente novamente.\n");
+                    Cores.Erro("Digite apenas números. Tente novamente.\n");
                     continue;
                 }
 
@@ -436,18 +463,18 @@ namespace ContaBancaria.Menu
             float auxValor;
             while (true)
             {
-                Console.Write("Digite o valor da transferência: ");
+                Cores.Input("Digite o valor da transferência: ");
                 string valor = Console.ReadLine();
 
                 if (string.IsNullOrWhiteSpace(valor))
                 {
-                    Console.WriteLine("O campo não pode ser vazio. Tente novamente.\n");
+                    Cores.Erro("O campo não pode ser vazio. Tente novamente.\n");
                     continue;
                 }
                 auxValor = float.Parse(valor);
                 if (auxValor <= 0)
                 {
-                    Console.WriteLine("O valor deve ser maior que zero. Tente novamente.\n");
+                    Cores.Erro("O valor deve ser maior que zero. Tente novamente.\n");
                     continue;
                 }
                 break;

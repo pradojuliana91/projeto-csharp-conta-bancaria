@@ -6,8 +6,8 @@ namespace ContaBancaria.Models
     {
         public float Limite { get; set; }
 
-        public ContaCorrente(int numero, int agencia, string titular, float limite)
-            : base(numero, agencia, TipoConta.Corrente, titular)
+        public ContaCorrente(long? id, int agencia, int numero, string titular, float saldo, float limite)
+            : base(id, agencia, numero, TipoConta.Corrente, titular, saldo)
         {
             Limite = limite;
         }
@@ -26,17 +26,6 @@ namespace ContaBancaria.Models
 
             Saldo -= valor;
             return true;
-
-        }
-
-        public void Visualizar()
-        {
-            Console.WriteLine("----- Dados da Conta Corrente -----");
-            Console.WriteLine("Número: " + Numero);
-            Console.WriteLine("Agência: " + Agencia);
-            Console.WriteLine("Titular: " + Titular);
-            Console.WriteLine("Saldo: " + Saldo);
-            Console.WriteLine("Limite: " + Limite);
         }
     }
 }

@@ -4,13 +4,14 @@ namespace ContaBancaria.Repositories.Interfaces
 {
     interface IContaRepository
     {
-        void procurarPorNumero(int numero);
-        void listarTodas();
-        void cadastrar(Conta conta);
-        void atualizar(Conta conta);
-        void deletar(int numero);
-        void sacar(int numero, float valor);
-        void depositar(int numero, float valor);
-        void transferir(int numeroOrigem, int numeroDestino, float valor);
+        Conta? ProcurarPorAgenciaENumero(int agencia, int numero);
+        List<Conta> ListarTodas();
+        long? Cadastrar(Conta conta);
+        void Atualizar(int agenciaAtual, int numeroAtual, Conta conta);
+       
+        void Deletar(int agencia, int numero);
+        void Sacar(int agencia, int numero, float valor);
+        void Depositar(int agencia, int numero, float valor);
+        void Transferir(int agenciaOrigem, int numeroOrigem, int agenciaDestino, int numeroDestino, float valor);
     }
 }

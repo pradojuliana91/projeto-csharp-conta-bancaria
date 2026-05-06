@@ -4,19 +4,21 @@ namespace ContaBancaria.Models
 {
     abstract class Conta
     {
-        public int Numero { get; set; }
+        public long? Id { get; set; }
         public int Agencia { get; set; }
+        public int Numero { get; set; }        
         public TipoConta Tipo { get; set; }
         public string Titular { get; set; }
         public float Saldo { get; set; }
 
-        public Conta(int numero, int agencia, TipoConta tipo, string titular)
+        public Conta(long? id, int agencia, int numero, TipoConta tipo, string titular, float saldo)
         {
-            Numero = numero;
+            Id = id;
             Agencia = agencia;
+            Numero = numero;
             Tipo = tipo;
             Titular = titular;
-            Saldo = 0.0f;
+            Saldo = saldo;
         }
 
         public abstract bool Sacar(float valor);
