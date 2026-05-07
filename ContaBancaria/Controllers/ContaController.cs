@@ -2,15 +2,23 @@
 using ContaBancaria.Models;
 using ContaBancaria.Repositories;
 using ContaBancaria.Repositories.Interfaces;
-using ContaBancaria.Utils;
 using System.ComponentModel.DataAnnotations;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ContaBancaria.Controllers
 {
-    class ContaController : IContaController
+    public class ContaController : IContaController
     {
-        private readonly IContaRepository contaRepository = new ContaRepository();
+        private readonly IContaRepository contaRepository;
+
+        public ContaController(IContaRepository contaRepository)
+        {
+            this.contaRepository = contaRepository;
+        }
+
+        public ContaController()
+        {
+            contaRepository = new ContaRepository();
+        }        
 
         public Conta ProcurarPorAgenciaENumero(int agencia, int numero)
         {

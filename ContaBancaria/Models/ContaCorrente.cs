@@ -2,7 +2,7 @@
 
 namespace ContaBancaria.Models
 {
-    class ContaCorrente : Conta
+    public class ContaCorrente : Conta
     {
         public float Limite { get; set; }
 
@@ -14,17 +14,18 @@ namespace ContaBancaria.Models
 
         public override bool Sacar(float valor)
         {
-            if ((Saldo + Limite) < valor)
-            {
-                return false;
-            }
-
             if (valor <= 0)
             {
                 return false;
             }
 
+            if ((Saldo - valor) < -Limite)
+            {
+                return false;
+            }
+
             Saldo -= valor;
+
             return true;
         }
 

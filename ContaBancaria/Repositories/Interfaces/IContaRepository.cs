@@ -2,7 +2,7 @@
 
 namespace ContaBancaria.Repositories.Interfaces
 {
-    interface IContaRepository
+    public interface IContaRepository
     {
         Conta? ProcurarPorAgenciaENumero(int agencia, int numero);
         List<Conta> ListarTodas();

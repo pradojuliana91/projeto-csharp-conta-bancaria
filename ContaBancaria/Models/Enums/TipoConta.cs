@@ -1,6 +1,6 @@
 ﻿namespace ContaBancaria.Models.Enums
 {
-    enum TipoConta
+    public enum TipoConta
     {
         Corrente = 1,
         Poupanca = 2

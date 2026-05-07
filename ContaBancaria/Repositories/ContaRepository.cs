@@ -5,7 +5,7 @@ using ContaBancaria.Utils;
 using MySql.Data.MySqlClient;
 
 namespace ContaBancaria.Repositories;
-class ContaRepository : IContaRepository
+public class ContaRepository : IContaRepository
 {
     public Conta? ProcurarPorAgenciaENumero(int agencia, int numero)
     {
@@ -247,7 +247,7 @@ class ContaRepository : IContaRepository
             string sql = @"DELETE FROM 
                                 contas 
                            WHERE 
-                                agencia == @agencia 
+                                agencia = @agencia 
                                 AND numero = @numero";
 
             using (var comando = new MySqlCommand(sql, conexao))
@@ -270,8 +270,7 @@ class ContaRepository : IContaRepository
                                 saldo = saldo - @valor 
                            WHERE 
                                 agencia = @agencia 
-                                AND numero = @numero 
-                                AND saldo >= @valor";
+                                AND numero = @numero";
 
             using (var comando = new MySqlCommand(sql, conexao))
             {
@@ -320,8 +319,7 @@ class ContaRepository : IContaRepository
                                             saldo = saldo - @valor 
                                         WHERE 
                                             agencia = @agenciaOrigem 
-                                            AND numero = @numeroOrigem 
-                                            AND saldo >= @valor";
+                                            AND numero = @numeroOrigem";
 
                     using (var comandoSacar = new MySqlCommand(sqlSacar, conexao, transaction))
                     {

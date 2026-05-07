@@ -2,7 +2,7 @@
 
 namespace ContaBancaria.Models
 {
-    abstract class Conta
+    public abstract class Conta
     {
         public long? Id { get; set; }
         public int Agencia { get; set; }

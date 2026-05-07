@@ -2,7 +2,7 @@
 
 namespace ContaBancaria.Models
 {
-    class ContaPoupanca : Conta
+    public class ContaPoupanca : Conta
     {
         public int Aniversario { get; set; }
 
